@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, LogOut, UserCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { MobileSidebar } from "./mobile-sidebar";
 
 export function Header() {
   const { data } = useSession();
@@ -13,6 +14,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur px-6">
+      <MobileSidebar />
       <div className="flex-1" />
       {mounted && (
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="切換主題">
