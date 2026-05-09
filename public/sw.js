@@ -1,5 +1,5 @@
 // 簡易 Service Worker：靜態資源 cache-first，HTML / API 永遠 network-first
-const CACHE = "erp-v1";
+const CACHE = "erp-v2";
 const STATIC_PREFIX = ["/_next/static/", "/icon-192", "/icon-512"];
 
 self.addEventListener("install", (e) => {
