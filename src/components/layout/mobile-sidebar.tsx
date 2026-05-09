@@ -14,6 +14,19 @@ export function MobileSidebar() {
     setOpen(false);
   }, [pathname]);
 
+  // 登入後自動展開一次，讓用戶知道選單在哪裡
+  useEffect(() => {
+    try {
+      const flag = sessionStorage.getItem("erp_just_logged_in");
+      if (flag && window.innerWidth < 768) {
+        sessionStorage.removeItem("erp_just_logged_in");
+        // 給頁面 render 時間後再展開
+        const t = setTimeout(() => setOpen(true), 400);
+        return () => clearTimeout(t);
+      }
+    } catch {}
+  }, []);
+
   // 鎖定 body 捲動
   useEffect(() => {
     if (open) {
