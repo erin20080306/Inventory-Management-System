@@ -20,7 +20,7 @@ function LoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const callbackUrl = sp.get("callbackUrl") || "/dashboard";
-  const [username, setUsername] = useState("admin");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -151,12 +151,6 @@ function LoginInner() {
               </Button>
             </form>
 
-            <div className="mt-6 rounded-lg bg-white/5 border border-white/10 p-3 text-xs text-slate-400">
-              <div className="font-medium mb-1 text-slate-300 flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3" />預設管理員
-              </div>
-              帳號：<code className="px-1.5 py-0.5 rounded bg-white/10 text-emerald-300">admin</code>　密碼：<code className="px-1.5 py-0.5 rounded bg-white/10 text-emerald-300">661012</code>
-            </div>
           </div>
         </div>
       </div>
