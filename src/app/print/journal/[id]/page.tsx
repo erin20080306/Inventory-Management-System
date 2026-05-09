@@ -84,81 +84,76 @@ export default async function PrintJournal({ params }: { params: { id: string } 
 
   const voucherKind = guessVoucherKind();
 
+  const e = entry!;
+  const VoucherHalf = ({ tag }: { tag: string }) => (
+    <div className="voucher-half">
+      <div className="voucher-tag">{tag}</div>
+      <CompanyHeader />
+      <div className="doc-title">傳　票　憑　證</div>
+      <div style={{ textAlign: "center", fontSize: 11, marginTop: -3, marginBottom: 4, letterSpacing: 3 }}>
+        【{voucherKind}】
+      </div>
+      <div className="meta">
+        <div><span className="label">傳票編號：</span>{e.number}</div>
+        <div><span className="label">日　期：</span>{dateStr}</div>
+        <div style={{ gridColumn: "1 / span 2" }}>
+          <span className="label">摘　要：</span>{e.summary || "—"}
+        </div>
+        <div><span className="label">狀　態：</span>{statusLabel[e.status] ?? e.status}</div>
+        <div><span className="label">大　寫：</span>新台幣 {toChineseAmount(totalDebit)}</div>
+      </div>
+      <table className="doc-table">
+        <thead>
+          <tr>
+            <th style={{ width: "12%" }}>科目編號</th>
+            <th style={{ width: "24%" }}>會計科目</th>
+            <th style={{ width: "26%" }}>摘要</th>
+            <th style={{ width: "19%" }} className="num">借方金額</th>
+            <th style={{ width: "19%" }} className="num">貸方金額</th>
+          </tr>
+        </thead>
+        <tbody>
+          {e.lines.map((l: any) => (
+            <tr key={l.id}>
+              <td>{l.account.code}</td>
+              <td>{l.account.name}</td>
+              <td>{l.memo ?? ""}</td>
+              <td className="num">{Number(l.debit) > 0 ? formatMoney(l.debit).replace("NT$ ", "") : ""}</td>
+              <td className="num">{Number(l.credit) > 0 ? formatMoney(l.credit).replace("NT$ ", "") : ""}</td>
+            </tr>
+          ))}
+          {Array.from({ length: Math.max(0, 3 - e.lines.length) }).map((_, i) => (
+            <tr key={`empty-${i}`}>
+              <td>&nbsp;</td><td></td><td></td><td className="num"></td><td className="num"></td>
+            </tr>
+          ))}
+          <tr style={{ fontWeight: 700, background: "#f8fafc" }}>
+            <td colSpan={3} style={{ textAlign: "right" }}>合　計</td>
+            <td className="num">{formatMoney(totalDebit).replace("NT$ ", "")}</td>
+            <td className="num">{formatMoney(totalCredit).replace("NT$ ", "")}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="signatures">
+        <div className="sig-box" data-label="總經理"></div>
+        <div className="sig-box" data-label="會計主管"></div>
+        <div className="sig-box" data-label="覆　核"></div>
+        <div className="sig-box" data-label="出　納"></div>
+        <div className="sig-box" data-label="記　帳"></div>
+        <div className="sig-box" data-label="製　單">{e.createdBy?.name ?? ""}</div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <AutoPrint />
-      <div className="sheet">
-        <CompanyHeader />
-        <div className="doc-title">傳　票　憑　證</div>
-        <div style={{ textAlign: "center", fontSize: 14, marginTop: -8, marginBottom: 10, letterSpacing: 4 }}>
-          【{voucherKind}】
-        </div>
-
-        <div className="meta">
-          <div><span className="label">傳票編號：</span>{entry.number}</div>
-          <div><span className="label">日　　期：</span>{dateStr}</div>
-          <div style={{ gridColumn: "1 / span 2" }}>
-            <span className="label">摘　　要：</span>{entry.summary || "—"}
+      <div className="sheet-double">
+        <VoucherHalf tag="會計傳票" />
+        <div className="voucher-half voucher-half-blank">
+          <div style={{ textAlign: "center", color: "#999", fontSize: 11, marginTop: 8 }}>
+            ✂ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 沿線剪裁 (中一刀) ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
           </div>
-          <div><span className="label">狀　　態：</span>{statusLabel[entry.status] ?? entry.status}</div>
-          <div><span className="label">金額大寫：</span>新台幣 {toChineseAmount(totalDebit)}</div>
-        </div>
-
-        <table className="doc-table cn-voucher">
-          <thead>
-            <tr>
-              <th rowSpan={2} style={{ width: "10%" }}>科目編號</th>
-              <th rowSpan={2} style={{ width: "18%" }}>會計科目</th>
-              <th rowSpan={2} style={{ width: "20%" }}>摘要</th>
-              <th colSpan={11} className="num">借　方　金　額</th>
-              <th colSpan={11} className="num">貸　方　金　額</th>
-            </tr>
-            <tr>
-              {AMOUNT_UNITS.map((u, i) => <th key={`d${i}`} className="unit-cell">{u}</th>)}
-              {AMOUNT_UNITS.map((u, i) => <th key={`c${i}`} className="unit-cell">{u}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {entry.lines.map((l: any) => {
-              const dArr = splitAmount(Number(l.debit));
-              const cArr = splitAmount(Number(l.credit));
-              return (
-                <tr key={l.id}>
-                  <td>{l.account.code}</td>
-                  <td>{l.account.name}</td>
-                  <td>{l.memo ?? ""}</td>
-                  {dArr.map((v, i) => <td key={`d${i}`} className="unit-cell num">{v}</td>)}
-                  {cArr.map((v, i) => <td key={`c${i}`} className="unit-cell num">{v}</td>)}
-                </tr>
-              );
-            })}
-            {Array.from({ length: Math.max(0, 6 - entry.lines.length) }).map((_, i) => (
-              <tr key={`empty-${i}`}>
-                <td>&nbsp;</td><td></td><td></td>
-                {Array.from({ length: 22 }).map((_, j) => <td key={j} className="unit-cell"></td>)}
-              </tr>
-            ))}
-            <tr style={{ fontWeight: 700, background: "#f8fafc" }}>
-              <td colSpan={3} style={{ textAlign: "right" }}>合　計</td>
-              {splitAmount(totalDebit).map((v, i) => <td key={`td${i}`} className="unit-cell num">{v}</td>)}
-              {splitAmount(totalCredit).map((v, i) => <td key={`tc${i}`} className="unit-cell num">{v}</td>)}
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="signatures">
-          <div className="sig-box" data-label="董事長"></div>
-          <div className="sig-box" data-label="總經理"></div>
-          <div className="sig-box" data-label="會計主管"></div>
-          <div className="sig-box" data-label="覆　核"></div>
-          <div className="sig-box" data-label="出　納"></div>
-          <div className="sig-box" data-label="記　帳"></div>
-          <div className="sig-box" data-label="審　核"></div>
-          <div className="sig-box" data-label="製　單">{entry.createdBy?.name ?? ""}</div>
-        </div>
-
-        <div className="footer-note">
-          本憑證連同所附單據共 ____ 張。　列印時間：{new Date().toLocaleString("zh-TW")}
         </div>
       </div>
     </>

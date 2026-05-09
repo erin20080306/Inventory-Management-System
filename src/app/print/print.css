@@ -24,6 +24,111 @@ html, body {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
 }
 
+/* 中一刀：A5 橫向 (210mm × 148mm) 單張單聯 */
+.sheet-half {
+  width: 210mm;
+  height: 148mm;
+  padding: 6mm 10mm;
+  margin: 16px auto;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.voucher-half {
+  flex: 1 1 50%;
+  padding: 8mm 12mm;
+  position: relative;
+  overflow: hidden;
+}
+
+.voucher-half + .voucher-half {
+  border-top: 1px dashed #999;
+}
+
+.cut-mark {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #999;
+  background: #fff;
+  padding: 0 8px;
+}
+
+.voucher-tag {
+  position: absolute;
+  top: 8mm;
+  right: 12mm;
+  border: 1px solid #000;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* 中一刀緊湊樣式 (一張 A4 印兩聯) */
+.voucher-half .company-header,
+.sheet-half .company-header {
+  padding-bottom: 3px;
+  margin-bottom: 4px;
+}
+.sheet-half .company-name {
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+.sheet-half .company-sub {
+  font-size: 9px;
+  margin-top: 1px;
+}
+.sheet-half .doc-title {
+  font-size: 13px;
+  letter-spacing: 3px;
+  margin: 3px 0 4px;
+}
+.sheet-half .meta {
+  font-size: 10px;
+  gap: 1px 12px;
+  margin-bottom: 3px;
+}
+.sheet-half table.doc-table {
+  font-size: 10px;
+}
+.sheet-half table.doc-table th,
+.sheet-half table.doc-table td {
+  padding: 2px 4px;
+}
+.sheet-half table.cn-voucher .unit-cell {
+  width: 14px;
+  min-width: 14px;
+  padding: 2px 1px;
+  font-size: 9px;
+}
+.sheet-half table.cn-voucher tbody .unit-cell {
+  font-size: 10px;
+}
+.sheet-half .signatures {
+  margin-top: 4px;
+  gap: 4px;
+  font-size: 10px;
+  grid-template-columns: repeat(6, 1fr);
+}
+.sheet-half .sig-box {
+  height: 28px;
+  padding: 2px 4px;
+}
+.sheet-half .sig-box::before {
+  font-size: 9px;
+  top: 2px;
+  left: 3px;
+}
+.sheet-half .footer-note {
+  margin-top: 3px;
+  font-size: 9px;
+}
+
 .company-header {
   text-align: center;
   border-bottom: 2px solid #000;
@@ -200,6 +305,7 @@ table.cn-voucher tbody .unit-cell.num {
 @media print {
   body { background: #fff; }
   .sheet { margin: 0; box-shadow: none; }
+  .sheet-half { margin: 0; box-shadow: none; }
   .no-print { display: none !important; }
   @page { size: A4; margin: 0; }
 }
