@@ -1,0 +1,205 @@
+/* 專業列印樣式 - A4 */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", "Noto Sans CJK TC",
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #111;
+  background: #e5e7eb;
+}
+
+.print-body {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sheet {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 14mm 16mm;
+  margin: 16px auto;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
+}
+
+.company-header {
+  text-align: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+
+.company-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.company-sub {
+  font-size: 11px;
+  color: #555;
+  margin-top: 2px;
+}
+
+.doc-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  margin: 10px 0 16px;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.meta .label {
+  color: #555;
+  margin-right: 6px;
+}
+
+table.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+table.doc-table th,
+table.doc-table td {
+  border: 1px solid #000;
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+
+table.doc-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+table.doc-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 中式傳票金額分欄 */
+table.cn-voucher {
+  font-size: 11px;
+}
+table.cn-voucher .unit-cell {
+  width: 18px;
+  min-width: 18px;
+  padding: 4px 2px;
+  text-align: center;
+  font-size: 10px;
+  color: #555;
+  background: #fafafa;
+  border-left: 1px solid #d4d4d8;
+  border-right: 1px solid #d4d4d8;
+}
+table.cn-voucher tbody .unit-cell {
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+  font-weight: 500;
+}
+table.cn-voucher tbody .unit-cell.num {
+  text-align: center;
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.totals .summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  padding: 8px 10px;
+  border: 1px solid #000;
+}
+
+.totals .summary .row-total {
+  border-top: 1px solid #000;
+  padding-top: 6px;
+  margin-top: 6px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.signatures {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  font-size: 12px;
+}
+
+.sig-box {
+  border: 1px solid #000;
+  height: 56px;
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 8px;
+  position: relative;
+}
+
+.sig-box::before {
+  content: attr(data-label);
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  color: #555;
+  font-size: 11px;
+}
+
+.footer-note {
+  margin-top: 14px;
+  font-size: 11px;
+  color: #555;
+}
+
+.remark-box {
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px dashed #999;
+  font-size: 12px;
+  min-height: 40px;
+}
+.remark-box .label {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.no-print {
+  margin: 10px auto;
+  max-width: 210mm;
+  text-align: right;
+  padding: 0 16px;
+}
+
+.no-print button {
+  background: #111;
+  color: #fff;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+@media print {
+  body { background: #fff; }
+  .sheet { margin: 0; box-shadow: none; }
+  .no-print { display: none !important; }
+  @page { size: A4; margin: 0; }
+}
