@@ -39,34 +39,35 @@ export const authOptions: NextAuthOptions = {
         const username = credentials.username.trim();
         const ip = (req?.headers?.["x-forwarded-for"] as string) || "";
 
-        // 登入失敗限制：近 15 分鐘該帳號失敗 >= 5 次則拒絕
+        // 並行：失敗計數 + 使用者查詢 (節省一個 DB 來回時間)
         const since = new Date(Date.now() - 15 * 60 * 1000);
-        const recentFails = await prisma.loginLog.count({
-          where: { username, success: false, createdAt: { gte: since } },
-        });
+        const [recentFails, user] = await Promise.all([
+          prisma.loginLog.count({ where: { username, success: false, createdAt: { gte: since } } }),
+          prisma.user.findUnique({
+            where: { username },
+            include: {
+              userRoles: {
+                include: { role: { include: { permissions: { include: { permission: true } } } } },
+              },
+            },
+          }),
+        ]);
+
         if (recentFails >= 5) {
-          await prisma.loginLog.create({
-            data: { username, success: false, ip, userAgent: req?.headers?.["user-agent"] as string },
-          });
+          prisma.loginLog
+            .create({ data: { username, success: false, ip, userAgent: req?.headers?.["user-agent"] as string } })
+            .catch(() => {});
           throw new Error("登入失敗次數過多，請 15 分鐘後再試");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { username },
-          include: {
-            userRoles: {
-              include: { role: { include: { permissions: { include: { permission: true } } } } },
-            },
-          },
-        });
         if (!user || !user.isActive) {
-          await prisma.loginLog.create({ data: { username, success: false, ip } });
+          prisma.loginLog.create({ data: { username, success: false, ip } }).catch(() => {});
           return null;
         }
 
         const ok = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!ok) {
-          await prisma.loginLog.create({ data: { userId: user.id, username, success: false, ip } });
+          prisma.loginLog.create({ data: { userId: user.id, username, success: false, ip } }).catch(() => {});
           return null;
         }
 
@@ -79,11 +80,11 @@ export const authOptions: NextAuthOptions = {
         }
         const permissions = isSuper ? ["*"] : Array.from(permsSet);
 
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date(), lastLoginIp: ip },
-        });
-        await prisma.loginLog.create({ data: { userId: user.id, username, success: true, ip } });
+        // fire-and-forget：登入成功後續寫不阻塞 token 簽發
+        prisma.user
+          .update({ where: { id: user.id }, data: { lastLoginAt: new Date(), lastLoginIp: ip } })
+          .catch(() => {});
+        prisma.loginLog.create({ data: { userId: user.id, username, success: true, ip } }).catch(() => {});
 
         return {
           id: user.id,
