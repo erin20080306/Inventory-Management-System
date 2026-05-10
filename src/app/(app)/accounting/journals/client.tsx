@@ -7,7 +7,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/layout/page-shell";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, Search, Eye, Download, Printer } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, Eye, Download, Printer, FileDown } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
 
@@ -19,6 +19,7 @@ export function JournalClient() {
   const [q, setQ] = useState("");
   const [openNew, setOpenNew] = useState(false);
   const [view, setView] = useState<any>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const pageSize = 20;
 
   async function load() {
@@ -87,6 +88,13 @@ export function JournalClient() {
               toast.success("已匯出 CSV");
             }}
           ><Download className="h-4 w-4" />匯出 CSV</Button>
+          <Button variant="outline" disabled={pdfBusy} onClick={async () => {
+            setPdfBusy(true);
+            try { const { exportPageToPDF } = await import("@/lib/export-pdf"); await exportPageToPDF("傳票管理", "journals"); } finally { setPdfBusy(false); }
+          }}>
+            {pdfBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+            PDF
+          </Button>
           <Button onClick={() => setOpenNew(true)}><Plus className="h-4 w-4" />新增傳票</Button>
         </div>
       </div>

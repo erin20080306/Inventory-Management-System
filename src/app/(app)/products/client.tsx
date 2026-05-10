@@ -151,6 +151,8 @@ export function ProductClient() {
         { key: "isActive", title: "狀態", render: (r) => (r.isActive ? <Badge variant="success">啟用</Badge> : <Badge variant="danger">停用</Badge>) },
       ]}
       FormDialog={ProductDialog}
+      pdfTitle="商品管理"
+      exportName="products"
     />
   );
 }

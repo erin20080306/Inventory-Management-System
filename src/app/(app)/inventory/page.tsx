@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatNumber, formatMoney, formatDateTime } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExportButton } from "@/components/export-button";
-import { PrintListButton } from "@/components/print-list-button";
+import { PrintListButton, PDFExportButton } from "@/components/print-list-button";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +39,7 @@ export default async function Page() {
   };
 
   return (
-    <PageShell title="庫存管理" description="即時庫存、異動紀錄與多倉庫盤點" actions={<PrintListButton />}>
+    <PageShell title="庫存管理" description="即時庫存、異動紀錄與多倉庫盤點" actions={<><PDFExportButton title="庫存管理" filename="inventory" /><PrintListButton /></>}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>即時庫存</CardTitle>

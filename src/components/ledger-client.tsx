@@ -7,7 +7,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/layout/page-shell";
 import { toast } from "sonner";
-import { Loader2, Search, CreditCard, Download, Printer } from "lucide-react";
+import { Loader2, Search, CreditCard, Download, Printer, FileDown } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
 
@@ -20,6 +20,7 @@ export function LedgerClient({ kind }: { kind: "ar" | "ap" }) {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [pay, setPay] = useState<any>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const pageSize = 20;
 
   async function load() {
@@ -45,6 +46,13 @@ export function LedgerClient({ kind }: { kind: "ar" | "ap" }) {
           <Input placeholder={`搜尋${partyLabel}`} className="pl-9 w-72" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
         </div>
         <div className="flex items-center gap-2">
+        <Button variant="outline" disabled={pdfBusy} onClick={async () => {
+          setPdfBusy(true);
+          try { const { exportPageToPDF } = await import("@/lib/export-pdf"); await exportPageToPDF(kind === "ar" ? "應收帳款" : "應付帳款", kind === "ar" ? "receivables" : "payables"); } finally { setPdfBusy(false); }
+        }}>
+          {pdfBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+          PDF
+        </Button>
         <Button variant="outline" onClick={() => window.print()}>
           <Printer className="h-4 w-4" />
           列印

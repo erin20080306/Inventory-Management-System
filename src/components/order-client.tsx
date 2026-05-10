@@ -7,9 +7,23 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/layout/page-shell";
 import { toast } from "sonner";
-import { Plus, Loader2, Trash2, Eye, Search, Download, Printer } from "lucide-react";
+import { Plus, Loader2, Trash2, Eye, Search, Download, Printer, FileDown } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
+
+function PDFOrderBtn({ kind }: { kind: string }) {
+  const [busy, setBusy] = useState(false);
+  const title = kind === "purchase" ? "採購管理" : "銷售管理";
+  return (
+    <Button variant="outline" disabled={busy} onClick={async () => {
+      setBusy(true);
+      try { const { exportPageToPDF } = await import("@/lib/export-pdf"); await exportPageToPDF(title, `${kind}-orders`); } finally { setBusy(false); }
+    }}>
+      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+      PDF
+    </Button>
+  );
+}
 
 type Kind = "purchase" | "sales";
 
@@ -83,6 +97,7 @@ export function OrderClient({ kind }: { kind: Kind }) {
             <Download className="h-4 w-4" />
             匯出 CSV
           </Button>
+          <PDFOrderBtn kind={kind} />
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4" />
             列印

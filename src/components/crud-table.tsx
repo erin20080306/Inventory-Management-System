@@ -4,9 +4,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { EmptyState } from "@/components/layout/page-shell";
-import { Plus, Search, Loader2, Edit2, Trash2, Download, Printer } from "lucide-react";
+import { Plus, Search, Loader2, Edit2, Trash2, Download, Printer, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV, toCSV } from "@/lib/csv";
+
+function PDFBtn({ title, filename }: { title: string; filename: string }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          const { exportPageToPDF } = await import("@/lib/export-pdf");
+          await exportPageToPDF(title, filename);
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+      PDF
+    </Button>
+  );
+}
 
 export type Column<T> = {
   key: string;
@@ -27,6 +49,7 @@ export function CrudTable<T extends { id: string }>({
   initialQuery,
   exportable = true,
   exportName = "export",
+  pdfTitle = "",
 }: {
   endpoint: string;
   columns: Column<T>[];
@@ -36,6 +59,7 @@ export function CrudTable<T extends { id: string }>({
   canDelete?: boolean;
   exportable?: boolean;
   exportName?: string;
+  pdfTitle?: string;
   FormDialog: React.FC<{ open: boolean; onClose: () => void; row: T | null; onSaved: () => void }>;
   initialQuery?: Record<string, string>;
 }) {
@@ -98,6 +122,7 @@ export function CrudTable<T extends { id: string }>({
           />
         </div>
         <div className="flex items-center gap-2">
+          <PDFBtn title={pdfTitle || exportName} filename={exportName} />
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4" />
             列印

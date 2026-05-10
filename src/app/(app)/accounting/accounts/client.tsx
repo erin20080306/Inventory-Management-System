@@ -118,6 +118,7 @@ export function AccountClient() {
         key={refreshKey}
         endpoint="/api/accounting/accounts"
         exportName="accounts"
+        pdfTitle="會計科目"
         FormDialog={AccountDialog}
         columns={[
           { key: "code", title: "編號", render: (r: any) => <span className="font-mono text-xs">{r.code}</span> },

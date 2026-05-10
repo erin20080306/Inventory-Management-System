@@ -122,6 +122,8 @@ export function PartyClient({ kind }: { kind: "customer" | "supplier" }) {
       endpoint={endpoint}
       searchPlaceholder="搜尋編號 / 公司名稱 / 統編 / 電話"
       FormDialog={(props) => <PartyDialog {...props} endpoint={endpoint} kind={kind} />}
+      pdfTitle={kind === "customer" ? "客戶管理" : "供應商管理"}
+      exportName={kind === "customer" ? "customers" : "suppliers"}
       columns={[
         { key: "code", title: "編號", render: (r) => <span className="font-mono text-xs">{r.code}</span> },
         { key: "companyName", title: "公司名稱" },

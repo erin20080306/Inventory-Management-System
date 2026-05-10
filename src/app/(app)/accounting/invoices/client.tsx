@@ -7,7 +7,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/layout/page-shell";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, Search, Download, FileText, Ban, Printer } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, Download, FileText, Ban, Printer, FileDown } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
 
@@ -20,6 +20,7 @@ export function InvoiceClient() {
   const [openNew, setOpenNew] = useState(false);
   const [openFromSO, setOpenFromSO] = useState(false);
   const [openFromPO, setOpenFromPO] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const pageSize = 20;
 
   async function load() {
@@ -76,6 +77,13 @@ export function InvoiceClient() {
           <Input placeholder="搜尋發票號 / 對象" className="pl-9 w-72" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" disabled={pdfBusy} onClick={async () => {
+            setPdfBusy(true);
+            try { const { exportPageToPDF } = await import("@/lib/export-pdf"); await exportPageToPDF("發票管理", "invoices"); } finally { setPdfBusy(false); }
+          }}>
+            {pdfBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+            PDF
+          </Button>
           <Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4" />列印</Button>
           <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4" />匯出 CSV</Button>
           <Button variant="outline" onClick={() => setOpenFromSO(true)}><FileText className="h-4 w-4" />由銷售單開立</Button>
