@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { EmptyState } from "@/components/layout/page-shell";
-import { Plus, Search, Loader2, Edit2, Trash2, Download } from "lucide-react";
+import { Plus, Search, Loader2, Edit2, Trash2, Download, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV, toCSV } from "@/lib/csv";
 
@@ -98,6 +98,10 @@ export function CrudTable<T extends { id: string }>({
           />
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="h-4 w-4" />
+            列印
+          </Button>
           {exportable && (
             <Button
               variant="outline"

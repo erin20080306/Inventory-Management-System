@@ -5,6 +5,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/badge";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { PrintListButton } from "@/components/print-list-button";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function Page() {
     take: 100,
   });
   return (
-    <PageShell title="報價單" description="管理客戶報價與狀態">
+    <PageShell title="報價單" description="管理客戶報價與狀態" actions={<PrintListButton />}>
       <Card>
         <CardContent className="pt-6">
           <Table>

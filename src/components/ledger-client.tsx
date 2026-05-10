@@ -7,7 +7,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/layout/page-shell";
 import { toast } from "sonner";
-import { Loader2, Search, CreditCard, Download } from "lucide-react";
+import { Loader2, Search, CreditCard, Download, Printer } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
 
@@ -44,6 +44,11 @@ export function LedgerClient({ kind }: { kind: "ar" | "ap" }) {
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input placeholder={`搜尋${partyLabel}`} className="pl-9 w-72" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
         </div>
+        <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => window.print()}>
+          <Printer className="h-4 w-4" />
+          列印
+        </Button>
         <Button
           variant="outline"
           onClick={async () => {
@@ -65,6 +70,7 @@ export function LedgerClient({ kind }: { kind: "ar" | "ap" }) {
           <Download className="h-4 w-4" />
           匯出 CSV
         </Button>
+        </div>
       </div>
       <Table>
         <THead>

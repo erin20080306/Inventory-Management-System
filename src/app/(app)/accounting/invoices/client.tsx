@@ -76,6 +76,7 @@ export function InvoiceClient() {
           <Input placeholder="搜尋發票號 / 對象" className="pl-9 w-72" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4" />列印</Button>
           <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4" />匯出 CSV</Button>
           <Button variant="outline" onClick={() => setOpenFromSO(true)}><FileText className="h-4 w-4" />由銷售單開立</Button>
           <Button variant="outline" onClick={() => setOpenFromPO(true)}><FileText className="h-4 w-4" />由採購單開立</Button>

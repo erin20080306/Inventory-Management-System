@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrintListButton } from "@/components/print-list-button";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function Page() {
     prisma.bankAccount.findMany({ orderBy: { code: "asc" } }),
   ]);
   return (
-    <PageShell title="現金銀行" description="現金帳戶與銀行帳戶、轉帳與對帳">
+    <PageShell title="現金銀行" description="現金帳戶與銀行帳戶、轉帳與對帳" actions={<PrintListButton />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader><CardTitle>現金帳戶</CardTitle></CardHeader>

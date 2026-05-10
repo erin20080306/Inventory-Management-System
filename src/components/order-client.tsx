@@ -83,6 +83,10 @@ export function OrderClient({ kind }: { kind: Kind }) {
             <Download className="h-4 w-4" />
             匯出 CSV
           </Button>
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="h-4 w-4" />
+            列印
+          </Button>
           <Button onClick={() => setOpenNew(true)}>
             <Plus className="h-4 w-4" />
             新增{kind === "purchase" ? "採購單" : "銷售單"}

@@ -5,6 +5,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/badge";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrintListButton } from "@/components/print-list-button";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function Page() {
     prisma.purchaseReturn.findMany({ include: { supplier: true }, orderBy: { createdAt: "desc" }, take: 100 }),
   ]);
   return (
-    <PageShell title="退貨管理" description="銷售退貨 / 採購退貨，自動調整庫存與帳款">
+    <PageShell title="退貨管理" description="銷售退貨 / 採購退貨，自動調整庫存與帳款" actions={<PrintListButton />}>
       <Card>
         <CardHeader><CardTitle>銷售退貨</CardTitle></CardHeader>
         <CardContent>
