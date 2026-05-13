@@ -29,14 +29,16 @@ export const POST = apiHandler(async (req: NextRequest) => {
   const ap = await prisma.accountsPayable.findUnique({ where: { id: payableId } });
   if (!ap) throw new Error("找不到應付帳款");
   const number = await nextNumber("SP");
+  let paymentId: string | null = null;
   await prisma.$transaction(async (tx: any) => {
-    await tx.supplierPayment.create({
+    const created = await tx.supplierPayment.create({
       data: { number, supplierId: ap.supplierId, payableId: ap.id, amount: Number(amount), method, remark },
     });
+    paymentId = created.id;
     const newPaid = Number(ap.paidAmount) + Number(amount);
     const status = newPaid >= Number(ap.amount) ? "PAID" : "PARTIAL";
     await tx.accountsPayable.update({ where: { id: ap.id }, data: { paidAmount: newPaid, status } });
   });
   await audit({ userId: session.user.id, action: "pay", module: "payables", refId: payableId, detail: number });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, paymentId, number });
 });

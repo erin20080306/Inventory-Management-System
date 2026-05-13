@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Plus, Loader2, Trash2, Eye, Search, Download, Printer, FileDown } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
+import { ConvertToJournalButton } from "@/components/convert-to-journal-button";
 
 function PDFOrderBtn({ kind }: { kind: string }) {
   const [busy, setBusy] = useState(false);
@@ -483,6 +484,9 @@ function ViewOrderDialog({ kind, id, onClose, onChanged }: any) {
           >
             <Printer className="h-4 w-4" />列印
           </Button>
+          {(data.status === "RECEIVED" || data.status === "SHIPPED" || data.status === "INVOICED" || data.status === "PAID") && (
+            <ConvertToJournalButton sourceType={kind === "purchase" ? "PURCHASE" : "SALES"} sourceId={data.id} />
+          )}
           {data.status === "DRAFT" && <Button variant="outline" onClick={() => act("submit")}>送出</Button>}
           {data.status === "SUBMITTED" && kind === "purchase" && <Button variant="outline" onClick={() => act("approve")}>核准</Button>}
           {canReceiveShip && (

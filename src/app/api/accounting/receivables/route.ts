@@ -30,8 +30,9 @@ export const POST = apiHandler(async (req: NextRequest) => {
   const ar = await prisma.accountsReceivable.findUnique({ where: { id: receivableId } });
   if (!ar) throw new Error("找不到應收帳款");
   const number = await nextNumber("RP");
+  let paymentId: string | null = null;
   await prisma.$transaction(async (tx: any) => {
-    await tx.receivePayment.create({
+    const created = await tx.receivePayment.create({
       data: {
         number,
         customerId: ar.customerId,
@@ -41,6 +42,7 @@ export const POST = apiHandler(async (req: NextRequest) => {
         remark,
       },
     });
+    paymentId = created.id;
     const newPaid = Number(ar.paidAmount) + Number(amount);
     const status = newPaid >= Number(ar.amount) ? "PAID" : "PARTIAL";
     await tx.accountsReceivable.update({
@@ -52,5 +54,5 @@ export const POST = apiHandler(async (req: NextRequest) => {
     }
   });
   await audit({ userId: session.user.id, action: "receive", module: "receivables", refId: receivableId, detail: number });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, paymentId, number });
 });

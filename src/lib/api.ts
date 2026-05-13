@@ -68,12 +68,21 @@ export async function nextNumber(key: string) {
     });
     const now = new Date();
     const yyyy = String(now.getFullYear());
+    const yy = yyyy.slice(2);
+    const roc = String(now.getFullYear() - 1911);
     const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
     const seqStr = String(seq.nextNo).padStart(4, "0");
-    const number = (seq.format || "{prefix}{yyyy}{mm}-{seq:0000}")
-      .replace("{prefix}", seq.prefix)
+    // 傳票 (JE) 採用純數字格式：民國年(3)+月日+流水號 e.g. 11501030001
+    const isJE = key === "JE";
+    const fmt = seq.format || (isJE ? "{roc}{mm}{dd}{seq:0000}" : "{prefix}{yyyy}{mm}-{seq:0000}");
+    const number = fmt
+      .replace("{prefix}", isJE ? "" : seq.prefix)
+      .replace("{roc}", roc)
       .replace("{yyyy}", yyyy)
+      .replace("{yy}", yy)
       .replace("{mm}", mm)
+      .replace("{dd}", dd)
       .replace("{seq:0000}", seqStr);
     await tx.numberSequence.update({ where: { key }, data: { nextNo: seq.nextNo + 1 } });
     return number;

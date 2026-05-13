@@ -395,16 +395,49 @@ table.report-table tr.rule-double td {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 }
 
+/* === A4 中一刀傳票 (一張 A4 直印兩聯) === */
+.sheet-a4-cut {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 8mm 10mm;
+  margin: 16px auto;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+.voucher-half-block {
+  flex: 0 0 auto;
+  min-height: 132mm; /* 約 A4 一半 */
+  padding-bottom: 4mm;
+}
+.voucher-half-block .company-header {
+  border-bottom-width: 1.5px;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+.voucher-half-block .company-name { font-size: 16px; }
+.voucher-half-block .company-sub { font-size: 9px; }
+.cut-line {
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+  border-top: 1px dashed #999;
+  margin: 2mm 0;
+  padding-top: 1mm;
+  letter-spacing: 4px;
+}
+
 /* === 傳統傳票樣式 (參考一般會計傳票紙張) === */
 .trad-voucher-title {
   text-align: center;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 16px;
-  padding-bottom: 4px;
+  letter-spacing: 14px;
+  padding-bottom: 3px;
   border-bottom: 1.5px solid #000;
-  width: 220px;
-  margin: 8px auto 6px;
+  width: 200px;
+  margin: 4px auto 4px;
 }
 .trad-voucher-meta {
   display: flex;
@@ -501,6 +534,7 @@ table.trad-sign-table td.sign-area {
   body { background: #fff; }
   .sheet { margin: 0; box-shadow: none; }
   .sheet-half { margin: 0; box-shadow: none; }
+  .sheet-a4-cut { margin: 0; box-shadow: none; }
   .no-print { display: none !important; }
-  @page { size: A4 landscape; margin: 8mm 10mm; }
+  @page { size: A4; margin: 6mm; }
 }

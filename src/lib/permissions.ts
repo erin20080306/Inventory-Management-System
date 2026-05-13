@@ -16,6 +16,11 @@ export const MODULES = [
   "payables",
   "cash",
   "invoices",
+  "notes",
+  "assets",
+  "hr",
+  "payroll",
+  "attendance",
   "reports",
   "users",
   "roles",
@@ -45,6 +50,11 @@ export const MODULE_LABELS: Record<Module, string> = {
   payables: "應付帳款",
   cash: "現金銀行",
   invoices: "發票管理",
+  notes: "票據管理",
+  assets: "固定資產",
+  hr: "人事管理",
+  payroll: "薪資管理",
+  attendance: "出勤管理",
   reports: "財務報表",
   users: "使用者管理",
   roles: "角色權限",
@@ -85,7 +95,7 @@ export const DEFAULT_ROLES = {
   ACCOUNTANT: {
     name: "會計人員",
     permissions: ALL_PERMISSIONS.filter((p) =>
-      ["dashboard", "accounting", "journals", "receivables", "payables", "cash", "invoices", "reports"].includes(p.module)
+      ["dashboard", "accounting", "journals", "receivables", "payables", "cash", "invoices", "notes", "assets", "reports"].includes(p.module)
     ).map((p) => p.code),
   },
   PURCHASER: {

@@ -26,6 +26,7 @@ type Product = {
 function ProductDialog({ open, onClose, row, onSaved }: any) {
   const [form, setForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const [autofillHint, setAutofillHint] = useState<string | null>(null);
   useEffect(() => {
     setForm(
       row ?? {
@@ -38,7 +39,36 @@ function ProductDialog({ open, onClose, row, onSaved }: any) {
         isActive: true,
       }
     );
+    setAutofillHint(null);
   }, [row, open]);
+
+  // 新增模式下：輸入 SKU 後查相同 SKU 自動帶入成本/售價
+  useEffect(() => {
+    if (row) return; // 編輯模式不觸發
+    const sku = String(form.sku ?? "").trim();
+    if (sku.length < 2) { setAutofillHint(null); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/products?q=${encodeURIComponent(sku)}&pageSize=5`);
+        const d = await res.json();
+        const exact = (d.items as any[]).find((p) => p.sku === sku);
+        if (exact) {
+          setForm((f: any) => ({
+            ...f,
+            name: f.name || exact.name,
+            spec: f.spec || exact.spec,
+            costPrice: f.costPrice || Number(exact.costPrice),
+            salePrice: f.salePrice || Number(exact.salePrice),
+            barcode: f.barcode || exact.barcode,
+          }));
+          setAutofillHint(`已自動帶入：${exact.name} 成本 ${exact.costPrice} / 售價 ${exact.salePrice}`);
+        } else {
+          setAutofillHint(null);
+        }
+      } catch {}
+    }, 400);
+    return () => clearTimeout(t);
+  }, [form.sku, row]);
 
   async function save() {
     setSaving(true);
@@ -69,6 +99,7 @@ function ProductDialog({ open, onClose, row, onSaved }: any) {
           <div className="space-y-1">
             <Label>SKU *</Label>
             <Input value={form.sku ?? ""} onChange={(e) => setForm({ ...form, sku: e.target.value })} />
+            {autofillHint && <p className="text-xs text-emerald-600">{autofillHint}</p>}
           </div>
           <div className="space-y-1">
             <Label>條碼</Label>

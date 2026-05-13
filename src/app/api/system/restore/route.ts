@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 // 還原時的清空順序 (反向: 從子到父，避免外鍵衝突)
 const TRUNCATE_ORDER = [
   "auditLog", "loginLog",
+  "fixedAsset",
+  "attendanceRecord",
+  "payrollItem", "payroll", "payrollPeriod",
+  "employee", "department",
+  "notePayable", "noteReceivable",
   "invoiceItem", "invoice",
   "supplierPayment", "accountsPayable",
   "receivePayment", "accountsReceivable",

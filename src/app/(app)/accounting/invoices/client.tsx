@@ -7,9 +7,10 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/layout/page-shell";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, Search, Download, FileText, Ban, Printer, FileDown } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, Download, FileText, Ban, Printer, FileDown, ScanLine } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
+import { ConvertToJournalButton } from "@/components/convert-to-journal-button";
 
 export function InvoiceClient() {
   const [rows, setRows] = useState<any[]>([]);
@@ -109,6 +110,7 @@ export function InvoiceClient() {
           <Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4" />列印</Button>
           <Button variant="outline" onClick={exportExcel}><FileDown className="h-4 w-4" />Excel</Button>
           <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4" />CSV</Button>
+          <Button variant="outline" onClick={() => window.location.href = "/accounting/invoices/scan"}><ScanLine className="h-4 w-4" />掃描發票</Button>
           <Button variant="outline" onClick={() => setOpenFromSO(true)}><FileText className="h-4 w-4" />由銷售單開立</Button>
           <Button variant="outline" onClick={() => setOpenFromPO(true)}><FileText className="h-4 w-4" />由採購單開立</Button>
           <Button onClick={() => setOpenNew(true)}><Plus className="h-4 w-4" />新增發票</Button>
@@ -136,6 +138,7 @@ export function InvoiceClient() {
               <TD><StatusBadge status={i.status} /></TD>
               <TD className="text-right">
                 <div className="flex items-center justify-end gap-1">
+                  {i.status !== "VOID" && <ConvertToJournalButton sourceType="INVOICE" sourceId={i.id} size="sm" />}
                   <Button variant="ghost" size="icon" onClick={() => window.open(`/print/invoice/${i.id}`, "_blank")}>
                     <Printer className="h-4 w-4" />
                   </Button>

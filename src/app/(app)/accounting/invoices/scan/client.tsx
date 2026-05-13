@@ -105,7 +105,18 @@ export function InvoiceScanClient() {
       </div>
 
       {mode === "qr" && <QRScanner onParsed={handleParsed} />}
-      {mode === "photo" && <PhotoCapture onCapture={setPhoto} photo={photo} />}
+      {mode === "photo" && <PhotoCapture onCapture={setPhoto} photo={photo} onOcrResult={(extracted) => {
+        setForm((f) => ({
+          ...f,
+          number: extracted.invoiceNumber || f.number,
+          invoiceDate: extracted.date || f.invoiceDate,
+          sellerTaxId: extracted.sellerTaxId || f.sellerTaxId,
+          buyerTaxId: extracted.buyerTaxId || f.buyerTaxId,
+          amountExTax: extracted.amountExTax != null ? String(extracted.amountExTax) : f.amountExTax,
+          taxAmount: extracted.taxAmount != null ? String(extracted.taxAmount) : f.taxAmount,
+          totalAmount: extracted.totalAmount != null ? String(extracted.totalAmount) : f.totalAmount,
+        }));
+      }} />}
 
       {/* 共用表單 */}
       {mode && (
@@ -260,10 +271,28 @@ function QRScanner({ onParsed }: { onParsed: (p: ParsedInvoiceQR) => void }) {
 }
 
 /* ============================================================ */
-/*                       拍照元件                                 */
+/*                  拍照元件 + OCR 自動辨識                       */
 /* ============================================================ */
-function PhotoCapture({ onCapture, photo }: { onCapture: (data: string) => void; photo: string | null }) {
+type OCRResult = {
+  invoiceNumber?: string;
+  date?: string;
+  sellerTaxId?: string;
+  buyerTaxId?: string;
+  amountExTax?: number;
+  taxAmount?: number;
+  totalAmount?: number;
+  rawText?: string;
+};
+
+function PhotoCapture({ onCapture, photo, onOcrResult }: {
+  onCapture: (data: string) => void;
+  photo: string | null;
+  onOcrResult?: (r: OCRResult) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrText, setOcrText] = useState<string>("");
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -273,10 +302,31 @@ function PhotoCapture({ onCapture, photo }: { onCapture: (data: string) => void;
     reader.readAsDataURL(file);
   }
 
+  async function runOCR() {
+    if (!photo) return;
+    setOcrBusy(true);
+    setOcrProgress(0);
+    try {
+      const { default: Tesseract } = await import("tesseract.js");
+      const { data } = await Tesseract.recognize(photo, "chi_tra+eng", {
+        logger: (m: any) => { if (m.progress) setOcrProgress(Math.round(m.progress * 100)); },
+      });
+      const text = data.text;
+      setOcrText(text);
+      const parsed = parseInvoiceText(text);
+      onOcrResult?.(parsed);
+      toast.success("辨識完成");
+    } catch (e: any) {
+      toast.error("OCR 失敗：" + e.message);
+    } finally {
+      setOcrBusy(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">拍攝紙本發票</CardTitle>
+        <CardTitle className="text-base">拍攝紙本發票 (三聯式 / 二聯式)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <input
@@ -295,16 +345,66 @@ function PhotoCapture({ onCapture, photo }: { onCapture: (data: string) => void;
             <p className="text-sm">尚未拍照</p>
           </div>
         )}
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-2 justify-center flex-wrap">
           <Button onClick={() => inputRef.current?.click()}>
             <Camera className="h-4 w-4" />
             {photo ? "重新拍照" : "拍照 / 選擇圖片"}
           </Button>
+          {photo && (
+            <Button variant="outline" disabled={ocrBusy} onClick={runOCR}>
+              {ocrBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+              {ocrBusy ? `辨識中 ${ocrProgress}%` : "自動辨識 (OCR)"}
+            </Button>
+          )}
         </div>
+        {ocrText && (
+          <details className="text-xs">
+            <summary className="cursor-pointer text-muted-foreground">辨識文字（可展開檢視）</summary>
+            <pre className="mt-2 p-2 bg-muted/40 rounded whitespace-pre-wrap max-h-40 overflow-auto">{ocrText}</pre>
+          </details>
+        )}
         <p className="text-xs text-muted-foreground text-center">
-          請拍下整張發票後，於下方手動填寫資料
+          建議拍攝時讓發票完整在框內、字跡清楚。OCR 為輔助識別，請務必檢查欄位。
         </p>
       </CardContent>
     </Card>
   );
+}
+
+/** 從 OCR 文字嘗試解析發票欄位 */
+function parseInvoiceText(text: string): OCRResult {
+  const out: OCRResult = { rawText: text };
+  // 發票號碼: 2 英文字母 + 8 數字 (e.g. AB-12345678 或 AB 12345678)
+  const numMatch = text.match(/([A-Z]{2})[\s\-]?(\d{8})/);
+  if (numMatch) out.invoiceNumber = numMatch[1] + numMatch[2];
+
+  // 日期: 民國年 e.g. 113/12/03 或 西元 2024/12/03 或 2024-12-03
+  const rocDate = text.match(/(\d{2,3})[\/\-年](\d{1,2})[\/\-月](\d{1,2})/);
+  if (rocDate) {
+    const y = parseInt(rocDate[1], 10);
+    const yyyy = y < 200 ? y + 1911 : y;
+    out.date = `${yyyy}-${rocDate[2].padStart(2, "0")}-${rocDate[3].padStart(2, "0")}`;
+  }
+
+  // 統編：8 碼數字 (賣方 / 買方)，會有 2 組
+  const taxIds = Array.from(text.matchAll(/(?<!\d)(\d{8})(?!\d)/g)).map((m) => m[1]);
+  if (taxIds[0]) out.sellerTaxId = taxIds[0];
+  if (taxIds[1]) out.buyerTaxId = taxIds[1];
+
+  // 金額：嘗試從關鍵字旁邊抓
+  const totalMatch = text.match(/(總計|合計|金額)[\s:：]*([\d,]+)/);
+  if (totalMatch) out.totalAmount = Number(totalMatch[2].replace(/,/g, ""));
+
+  const taxMatch = text.match(/(營業稅|稅額)[\s:：]*([\d,]+)/);
+  if (taxMatch) out.taxAmount = Number(taxMatch[2].replace(/,/g, ""));
+
+  const exTaxMatch = text.match(/(銷售額|未稅)[\s:：]*([\d,]+)/);
+  if (exTaxMatch) out.amountExTax = Number(exTaxMatch[2].replace(/,/g, ""));
+
+  // 若 total 但沒未稅，估算
+  if (out.totalAmount && !out.amountExTax) {
+    out.amountExTax = Math.round(out.totalAmount / 1.05);
+    out.taxAmount = out.totalAmount - out.amountExTax;
+  }
+  return out;
 }

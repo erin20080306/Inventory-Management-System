@@ -93,71 +93,74 @@ export default async function PrintJournal({ params }: { params: { id: string } 
   const dataLines = e.lines;
   const blankCount = Math.max(0, minRows - dataLines.length);
 
+  const VoucherBlock = () => (
+    <div className="voucher-half-block">
+      <CompanyHeader />
+      <div className="trad-voucher-title">
+        {voucherKind.replace("傳票", "").replace("傳　票", "")} 傳　票
+      </div>
+      <div className="trad-voucher-meta">
+        <div className="left">傳票日期：{rocDate}</div>
+        <div className="right">
+          <div className="page-no">1/1</div>
+          <div>傳票號碼：{e.number}</div>
+        </div>
+      </div>
+      <table className="trad-voucher-table">
+        <thead>
+          <tr>
+            <th className="col-account">會 計 科 目</th>
+            <th className="col-code">科目代號</th>
+            <th className="col-particulars">摘　　　　　要</th>
+            <th className="col-amt">借　方</th>
+            <th className="col-amt">貸　方</th>
+          </tr>
+        </thead>
+        <tbody>
+          {dataLines.map((l: any) => (
+            <tr key={l.id}>
+              <td>{l.account.name}</td>
+              <td className="center">{l.account.code}</td>
+              <td>{l.memo ?? ""}</td>
+              <td className="num">{Number(l.debit) > 0 ? formatMoney(l.debit).replace("NT$ ", "") : ""}</td>
+              <td className="num">{Number(l.credit) > 0 ? formatMoney(l.credit).replace("NT$ ", "") : ""}</td>
+            </tr>
+          ))}
+          {Array.from({ length: blankCount }).map((_, i) => (
+            <tr key={`empty-${i}`} className="blank">
+              <td>&nbsp;</td><td></td><td></td><td></td><td></td>
+            </tr>
+          ))}
+          <tr className="total-row">
+            <td colSpan={3} className="center">合　　計</td>
+            <td className="num">{formatMoney(totalDebit).replace("NT$ ", "")}</td>
+            <td className="num">{formatMoney(totalCredit).replace("NT$ ", "")}</td>
+          </tr>
+        </tbody>
+      </table>
+      <table className="trad-sign-table">
+        <tbody>
+          <tr>
+            <td className="sign-label">主管</td><td className="sign-area"></td>
+            <td className="sign-label">核准</td><td className="sign-area"></td>
+            <td className="sign-label">出納</td><td className="sign-area"></td>
+            <td className="sign-label">覆核</td><td className="sign-area"></td>
+            <td className="sign-label">會計</td><td className="sign-area"></td>
+            <td className="sign-label">製表</td><td className="sign-area">{e.createdBy?.name ?? ""}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="trad-remark">傳票備註：{e.summary || ""}</div>
+    </div>
+  );
+
   return (
     <>
       <AutoPrint />
-      <div className="sheet-half">
-        <CompanyHeader />
-        {/* 中央標題 */}
-        <div className="trad-voucher-title">
-          {voucherKind.replace("傳票", "").replace("傳　票", "")} 傳　票
-        </div>
-        {/* 上方資訊列 */}
-        <div className="trad-voucher-meta">
-          <div className="left">傳票日期：{rocDate}</div>
-          <div className="right">
-            <div className="page-no">1/1</div>
-            <div>傳票號碼：{e.number}</div>
-          </div>
-        </div>
-        {/* 主表格 */}
-        <table className="trad-voucher-table">
-          <thead>
-            <tr>
-              <th className="col-account">會 計 科 目<br /><span className="en">ACCOUNT</span></th>
-              <th className="col-code">科目代號<br /><span className="en">A/C NO.</span></th>
-              <th className="col-particulars">摘　　　　　要<br /><span className="en">PARTICULARS</span></th>
-              <th className="col-amt">借　方<br /><span className="en">DEBIT</span></th>
-              <th className="col-amt">貸　方<br /><span className="en">CREDIT</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {dataLines.map((l: any) => (
-              <tr key={l.id}>
-                <td>{l.account.name}</td>
-                <td className="center">{l.account.code}</td>
-                <td>{l.memo ?? ""}</td>
-                <td className="num">{Number(l.debit) > 0 ? formatMoney(l.debit).replace("NT$ ", "") : ""}</td>
-                <td className="num">{Number(l.credit) > 0 ? formatMoney(l.credit).replace("NT$ ", "") : ""}</td>
-              </tr>
-            ))}
-            {Array.from({ length: blankCount }).map((_, i) => (
-              <tr key={`empty-${i}`} className="blank">
-                <td>&nbsp;</td><td></td><td></td><td></td><td></td>
-              </tr>
-            ))}
-            <tr className="total-row">
-              <td colSpan={3} className="center">T O T A L ：合　　計</td>
-              <td className="num">{formatMoney(totalDebit).replace("NT$ ", "")}</td>
-              <td className="num">{formatMoney(totalCredit).replace("NT$ ", "")}</td>
-            </tr>
-          </tbody>
-        </table>
-        {/* 簽核欄 */}
-        <table className="trad-sign-table">
-          <tbody>
-            <tr>
-              <td className="sign-label">主管</td><td className="sign-area"></td>
-              <td className="sign-label">核准</td><td className="sign-area"></td>
-              <td className="sign-label">出納</td><td className="sign-area"></td>
-              <td className="sign-label">覆核</td><td className="sign-area"></td>
-              <td className="sign-label">會計</td><td className="sign-area"></td>
-              <td className="sign-label">製表</td><td className="sign-area">{e.createdBy?.name ?? ""}</td>
-            </tr>
-          </tbody>
-        </table>
-        {/* 備註 */}
-        <div className="trad-remark">傳票備註：{e.summary || ""}</div>
+      <div className="sheet-a4-cut">
+        <VoucherBlock />
+        <div className="cut-line">✂ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 沿線剪裁 (中一刀) ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+        <VoucherBlock />
       </div>
     </>
   );

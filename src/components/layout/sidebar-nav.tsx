@@ -7,7 +7,8 @@ import { hasPermission } from "@/lib/auth";
 import {
   LayoutDashboard, Package, Users, Truck, ShoppingCart, FileText, Receipt, Warehouse,
   RotateCcw, BookOpen, BookMarked, Coins, Wallet, FileSpreadsheet, BarChart3,
-  UserCog, Shield, Settings, History, Building2,
+  UserCog, Shield, Settings, History, Building2, ScrollText, Landmark,
+  Briefcase, BadgeDollarSign, Building,
 } from "lucide-react";
 
 type NavItem = { title: string; href: string; icon: any; perm?: string };
@@ -19,6 +20,7 @@ const sections: NavSection[] = [
     label: "進銷存",
     items: [
       { title: "商品管理", href: "/products", icon: Package, perm: "products.view" },
+      { title: "成本管理", href: "/products/costs", icon: Coins, perm: "products.edit" },
       { title: "客戶管理", href: "/customers", icon: Users, perm: "customers.view" },
       { title: "供應商管理", href: "/suppliers", icon: Truck, perm: "suppliers.view" },
       { title: "採購管理", href: "/purchases", icon: ShoppingCart, perm: "purchases.view" },
@@ -35,8 +37,19 @@ const sections: NavSection[] = [
       { title: "傳票管理", href: "/accounting/journals", icon: BookMarked, perm: "journals.view" },
       { title: "應收帳款", href: "/accounting/receivables", icon: Coins, perm: "receivables.view" },
       { title: "應付帳款", href: "/accounting/payables", icon: Wallet, perm: "payables.view" },
+      { title: "應收票據", href: "/accounting/notes-receivable", icon: ScrollText, perm: "notes.view" },
+      { title: "應付票據", href: "/accounting/notes-payable", icon: ScrollText, perm: "notes.view" },
       { title: "現金銀行", href: "/accounting/cash", icon: Wallet, perm: "cash.view" },
       { title: "發票管理", href: "/accounting/invoices", icon: FileSpreadsheet, perm: "invoices.view" },
+      { title: "固定資產", href: "/accounting/fixed-assets", icon: Landmark, perm: "assets.view" },
+    ],
+  },
+  {
+    label: "人事薪資",
+    items: [
+      { title: "員工管理", href: "/hr/employees", icon: Briefcase, perm: "hr.view" },
+      { title: "部門管理", href: "/hr/departments", icon: Building, perm: "hr.view" },
+      { title: "薪資管理", href: "/hr/payroll", icon: BadgeDollarSign, perm: "payroll.view" },
     ],
   },
   { label: "報表", items: [{ title: "財務報表", href: "/reports", icon: BarChart3, perm: "reports.view" }] },

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2, Search, CreditCard, Download, Printer, FileDown } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { downloadCSV, toCSV } from "@/lib/csv";
+import { ConvertToJournalButton } from "@/components/convert-to-journal-button";
 
 export function LedgerClient({ kind }: { kind: "ar" | "ap" }) {
   const endpoint = kind === "ar" ? "/api/accounting/receivables" : "/api/accounting/payables";
@@ -152,6 +153,7 @@ function PayDialog({ row, kind, onClose, onDone }: any) {
   const [method, setMethod] = useState("CASH");
   const [remark, setRemark] = useState("");
   const [saving, setSaving] = useState(false);
+  const [savedPayment, setSavedPayment] = useState<{ paymentId: string } | null>(null);
   const endpoint = kind === "ar" ? "/api/accounting/receivables" : "/api/accounting/payables";
   async function save() {
     if (Number(amount) <= 0) return toast.error("金額必須大於 0");
@@ -169,8 +171,13 @@ function PayDialog({ row, kind, onClose, onDone }: any) {
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "操作失敗");
+      const result = await res.json();
       toast.success("已處理");
-      onDone();
+      if (result.paymentId) {
+        setSavedPayment({ paymentId: result.paymentId });
+      } else {
+        onDone();
+      }
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
   }
   return (
@@ -190,7 +197,23 @@ function PayDialog({ row, kind, onClose, onDone }: any) {
           </div>
           <div className="space-y-1"><Label>備註</Label><Input value={remark} onChange={(e) => setRemark(e.target.value)} /></div>
         </div>
-        <DialogFooter><Button variant="outline" onClick={onClose}>取消</Button><Button onClick={save} disabled={saving}>{saving ? "處理中..." : "確認"}</Button></DialogFooter>
+        <DialogFooter>
+          {savedPayment ? (
+            <>
+              <Button variant="ghost" onClick={onDone}>完成</Button>
+              <ConvertToJournalButton
+                sourceType={kind === "ar" ? "RECEIVE_PAYMENT" : "SUPPLIER_PAYMENT"}
+                sourceId={savedPayment.paymentId}
+                label="轉傳票"
+              />
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={onClose}>取消</Button>
+              <Button onClick={save} disabled={saving}>{saving ? "處理中..." : "確認"}</Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

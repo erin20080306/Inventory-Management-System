@@ -20,6 +20,11 @@ const BACKUP_TABLES = [
   "journalEntry", "journalEntryLine",
   "accountsReceivable", "receivePayment",
   "accountsPayable", "supplierPayment",
+  "noteReceivable", "notePayable",
+  "fixedAsset",
+  "department", "employee",
+  "payrollPeriod", "payroll", "payrollItem",
+  "attendanceRecord",
   "invoice", "invoiceItem",
   "loginLog", "auditLog",
 ] as const;

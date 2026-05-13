@@ -20,6 +20,25 @@ export function JournalClient() {
   const [openNew, setOpenNew] = useState(false);
   const [view, setView] = useState<any>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [prefillDraft, setPrefillDraft] = useState<any>(null);
+
+  // 讀取從進銷存頁面轉傳票傳入的草稿
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("fromSource") === "1") {
+      const raw = sessionStorage.getItem("journal_draft");
+      if (raw) {
+        try {
+          setPrefillDraft(JSON.parse(raw));
+          setOpenNew(true);
+          sessionStorage.removeItem("journal_draft");
+          // 清掉 URL 參數
+          window.history.replaceState({}, "", "/accounting/journals");
+        } catch {}
+      }
+    }
+  }, []);
   const pageSize = 20;
 
   async function load() {
@@ -153,13 +172,13 @@ export function JournalClient() {
           <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>下一頁</Button>
         </div>
       </div>
-      <CreateJournalDialog open={openNew} onClose={() => setOpenNew(false)} onCreated={() => { setOpenNew(false); load(); }} />
+      <CreateJournalDialog open={openNew} onClose={() => { setOpenNew(false); setPrefillDraft(null); }} onCreated={() => { setOpenNew(false); setPrefillDraft(null); load(); }} prefillDraft={prefillDraft} />
       {view && <ViewJournalDialog entry={view} onClose={() => setView(null)} onAct={act} />}
     </div>
   );
 }
 
-function CreateJournalDialog({ open, onClose, onCreated }: any) {
+function CreateJournalDialog({ open, onClose, onCreated, prefillDraft }: any) {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [summary, setSummary] = useState("");
   const [entryDate, setEntryDate] = useState(new Date().toISOString().slice(0, 10));
@@ -169,9 +188,15 @@ function CreateJournalDialog({ open, onClose, onCreated }: any) {
   useEffect(() => {
     if (!open) return;
     fetch("/api/accounting/accounts").then((r) => r.json()).then((d) => setAccounts(d.items ?? []));
-    setSummary(""); setEntryDate(new Date().toISOString().slice(0, 10));
-    setLines([{ accountId: "", debit: 0, credit: 0, memo: "" }, { accountId: "", debit: 0, credit: 0, memo: "" }]);
-  }, [open]);
+    if (prefillDraft) {
+      setSummary(prefillDraft.summary || "");
+      setEntryDate(prefillDraft.entryDate || new Date().toISOString().slice(0, 10));
+      setLines(prefillDraft.lines.map((l: any) => ({ accountId: l.accountId, debit: l.debit, credit: l.credit, memo: l.memo ?? "" })));
+    } else {
+      setSummary(""); setEntryDate(new Date().toISOString().slice(0, 10));
+      setLines([{ accountId: "", debit: 0, credit: 0, memo: "" }, { accountId: "", debit: 0, credit: 0, memo: "" }]);
+    }
+  }, [open, prefillDraft]);
 
   const totalDebit = lines.reduce((s, l) => s + Number(l.debit || 0), 0);
   const totalCredit = lines.reduce((s, l) => s + Number(l.credit || 0), 0);

@@ -39,17 +39,21 @@ export default async function Page() {
           <CardHeader><CardTitle>銀行帳戶</CardTitle></CardHeader>
           <CardContent>
             <Table>
-              <THead><TR><TH>編號</TH><TH>名稱</TH><TH>銀行</TH><TH>帳號</TH><TH>餘額</TH></TR></THead>
+              <THead><TR><TH>編號</TH><TH>名稱</TH><TH>類型</TH><TH>銀行</TH><TH>帳號</TH><TH>餘額</TH></TR></THead>
               <TBody>
-                {bank.map((b: any) => (
-                  <TR key={b.id}>
-                    <TD className="font-mono text-xs">{b.code}</TD>
-                    <TD>{b.name}</TD>
-                    <TD>{b.bankName ?? "—"}</TD>
-                    <TD className="font-mono text-xs">{b.accountNumber ?? "—"}</TD>
-                    <TD>{formatMoney(b.balance)}</TD>
-                  </TR>
-                ))}
+                {bank.map((b: any) => {
+                  const typeLabel: Record<string, string> = { CHECKING: "甲存", SAVINGS: "乙存", TIME_DEPOSIT: "定存", FOREIGN: "外幣" };
+                  return (
+                    <TR key={b.id}>
+                      <TD className="font-mono text-xs">{b.code}</TD>
+                      <TD>{b.name}</TD>
+                      <TD>{typeLabel[b.accountType] ?? "—"}</TD>
+                      <TD>{b.bankName ?? "—"}{b.branchName ? ` / ${b.branchName}` : ""}</TD>
+                      <TD className="font-mono text-xs">{b.accountNumber ?? "—"}</TD>
+                      <TD>{formatMoney(b.balance)}</TD>
+                    </TR>
+                  );
+                })}
               </TBody>
             </Table>
           </CardContent>
