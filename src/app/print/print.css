@@ -24,11 +24,11 @@ html, body {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
 }
 
-/* 中一刀：A5 橫向 (210mm × 148mm) 單張單聯 */
+/* 傳票紙：A4 橫向 (297mm × 210mm) 單張 */
 .sheet-half {
-  width: 210mm;
-  height: 148mm;
-  padding: 6mm 10mm;
+  width: 297mm;
+  min-height: 210mm;
+  padding: 8mm 10mm;
   margin: 16px auto;
   background: #fff;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
@@ -395,10 +395,112 @@ table.report-table tr.rule-double td {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 }
 
+/* === 傳統傳票樣式 (參考一般會計傳票紙張) === */
+.trad-voucher-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 16px;
+  padding-bottom: 4px;
+  border-bottom: 1.5px solid #000;
+  width: 220px;
+  margin: 8px auto 6px;
+}
+.trad-voucher-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 12px;
+  margin-bottom: 4px;
+  padding: 0 2px;
+}
+.trad-voucher-meta .right {
+  text-align: right;
+  font-size: 12px;
+}
+.trad-voucher-meta .page-no {
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+table.trad-voucher-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+table.trad-voucher-table th,
+table.trad-voucher-table td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+table.trad-voucher-table th {
+  text-align: center;
+  font-weight: 600;
+  background: #fff;
+  padding: 4px 4px;
+  line-height: 1.3;
+}
+table.trad-voucher-table th .en {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  font-family: serif;
+}
+table.trad-voucher-table .col-account { width: 18%; }
+table.trad-voucher-table .col-code { width: 11%; }
+table.trad-voucher-table .col-particulars { width: 35%; }
+table.trad-voucher-table .col-amt { width: 18%; }
+table.trad-voucher-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+table.trad-voucher-table td.center { text-align: center; }
+table.trad-voucher-table tr.blank td { height: 18px; }
+table.trad-voucher-table tr.total-row td {
+  font-weight: 600;
+  letter-spacing: 2px;
+  height: 24px;
+}
+/* 簽核欄 */
+table.trad-sign-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: -1px; /* 與上方表格貼齊 */
+  table-layout: fixed;
+}
+table.trad-sign-table td {
+  border: 1px solid #000;
+  height: 50px;
+  vertical-align: top;
+  padding: 2px 4px;
+}
+table.trad-sign-table td.sign-label {
+  width: 5%;
+  text-align: center;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 4px;
+  padding: 4px 2px;
+  font-size: 12px;
+  background: #fff;
+}
+table.trad-sign-table td.sign-area {
+  width: 11.66%;
+}
+.trad-remark {
+  margin-top: 6px;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
 @media print {
   body { background: #fff; }
   .sheet { margin: 0; box-shadow: none; }
   .sheet-half { margin: 0; box-shadow: none; }
   .no-print { display: none !important; }
-  @page { size: A4; margin: 0; }
+  @page { size: A4 landscape; margin: 8mm 10mm; }
 }

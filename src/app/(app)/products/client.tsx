@@ -153,6 +153,17 @@ export function ProductClient() {
       FormDialog={ProductDialog}
       pdfTitle="商品管理"
       exportName="products"
+      templateHeaders={["SKU", "商品名稱", "規格", "單位", "成本", "售價", "安全庫存", "條碼"]}
+      importMap={(r) => ({
+        sku: String(r["SKU"] ?? r.sku ?? "").trim(),
+        name: String(r["商品名稱"] ?? r.name ?? "").trim(),
+        spec: String(r["規格"] ?? r.spec ?? "").trim(),
+        unit: String(r["單位"] ?? r.unit ?? "個").trim() || "個",
+        costPrice: Number(r["成本"] ?? r.costPrice ?? 0),
+        salePrice: Number(r["售價"] ?? r.salePrice ?? 0),
+        safetyStock: Number(r["安全庫存"] ?? r.safetyStock ?? 0),
+        barcode: String(r["條碼"] ?? r.barcode ?? "").trim() || undefined,
+      })}
     />
   );
 }

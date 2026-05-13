@@ -4,9 +4,84 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { EmptyState } from "@/components/layout/page-shell";
-import { Plus, Search, Loader2, Edit2, Trash2, Download, Printer, FileDown } from "lucide-react";
+import { Plus, Search, Loader2, Edit2, Trash2, Download, Printer, FileDown, FileSpreadsheet, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV, toCSV } from "@/lib/csv";
+
+function ImportBtn({
+  endpoint,
+  importMap,
+  templateHeaders,
+  templateName,
+  onDone,
+}: {
+  endpoint: string;
+  importMap: (row: Record<string, any>) => Record<string, any> | null;
+  templateHeaders?: string[];
+  templateName?: string;
+  onDone: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const inputId = useState(() => `xlsx-import-${Math.random().toString(36).slice(2)}`)[0];
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const { readExcelFile } = await import("@/lib/excel");
+      const rows = await readExcelFile(file);
+      let success = 0;
+      const errors: string[] = [];
+      for (let i = 0; i < rows.length; i++) {
+        const payload = importMap(rows[i]);
+        if (!payload) continue;
+        try {
+          const r = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!r.ok) {
+            const j = await r.json().catch(() => ({}));
+            errors.push(`第 ${i + 2} 列：${j.error || r.statusText}`);
+          } else success++;
+        } catch (err: any) {
+          errors.push(`第 ${i + 2} 列：${err.message}`);
+        }
+      }
+      if (errors.length === 0) toast.success(`已匯入 ${success} 筆`);
+      else toast.error(`成功 ${success} / 失敗 ${errors.length}\n${errors.slice(0, 3).join("\n")}`);
+      onDone();
+    } catch (err: any) {
+      toast.error(err.message || "匯入失敗");
+    } finally {
+      setBusy(false);
+      e.target.value = "";
+    }
+  }
+
+  async function downloadTpl() {
+    if (!templateHeaders) return;
+    const { downloadExcelTemplate } = await import("@/lib/excel");
+    downloadExcelTemplate(templateName ?? "template", "資料", templateHeaders);
+  }
+
+  return (
+    <>
+      <input id={inputId} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFile} />
+      <Button variant="outline" disabled={busy} onClick={() => document.getElementById(inputId)?.click()}>
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+        匯入
+      </Button>
+      {templateHeaders && (
+        <Button variant="ghost" size="sm" onClick={downloadTpl}>
+          範本
+        </Button>
+      )}
+    </>
+  );
+}
 
 function PDFBtn({ title, filename }: { title: string; filename: string }) {
   const [busy, setBusy] = useState(false);
@@ -50,6 +125,9 @@ export function CrudTable<T extends { id: string }>({
   exportable = true,
   exportName = "export",
   pdfTitle = "",
+  importMap,
+  importEndpoint,
+  templateHeaders,
 }: {
   endpoint: string;
   columns: Column<T>[];
@@ -60,6 +138,12 @@ export function CrudTable<T extends { id: string }>({
   exportable?: boolean;
   exportName?: string;
   pdfTitle?: string;
+  /** 匯入時將 Excel 一列轉換為 API payload */
+  importMap?: (row: Record<string, any>) => Record<string, any> | null;
+  /** 匯入 API endpoint（預設=endpoint POST） */
+  importEndpoint?: string;
+  /** Excel 範本表頭 */
+  templateHeaders?: string[];
   FormDialog: React.FC<{ open: boolean; onClose: () => void; row: T | null; onSaved: () => void }>;
   initialQuery?: Record<string, string>;
 }) {
@@ -121,34 +205,68 @@ export function CrudTable<T extends { id: string }>({
             }}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <PDFBtn title={pdfTitle || exportName} filename={exportName} />
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4" />
             列印
           </Button>
           {exportable && (
-            <Button
-              variant="outline"
-              onClick={async () => {
-                try {
-                  const params = new URLSearchParams({ q, page: "1", pageSize: "10000", ...(initialQuery ?? {}) });
-                  const res = await fetch(`${endpoint}?${params.toString()}`);
-                  const data = await res.json();
-                  const csv = toCSV(
-                    data.items,
-                    columns.map((c) => ({ key: c.key, title: c.title, get: c.csv })) as any
-                  );
-                  downloadCSV(`${exportName}-${new Date().toISOString().slice(0, 10)}.csv`, csv);
-                  toast.success("已匯出 CSV");
-                } catch (e: any) {
-                  toast.error(e.message || "匯出失敗");
-                }
-              }}
-            >
-              <Download className="h-4 w-4" />
-              匯出 CSV
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const params = new URLSearchParams({ q, page: "1", pageSize: "10000", ...(initialQuery ?? {}) });
+                    const res = await fetch(`${endpoint}?${params.toString()}`);
+                    const data = await res.json();
+                    const { downloadExcel } = await import("@/lib/excel");
+                    downloadExcel(
+                      exportName,
+                      pdfTitle || exportName,
+                      data.items,
+                      columns.map((c) => ({ key: c.key, title: c.title, get: c.csv })) as any
+                    );
+                    toast.success("已匯出 Excel");
+                  } catch (e: any) {
+                    toast.error(e.message || "匯出失敗");
+                  }
+                }}
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                Excel
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const params = new URLSearchParams({ q, page: "1", pageSize: "10000", ...(initialQuery ?? {}) });
+                    const res = await fetch(`${endpoint}?${params.toString()}`);
+                    const data = await res.json();
+                    const csv = toCSV(
+                      data.items,
+                      columns.map((c) => ({ key: c.key, title: c.title, get: c.csv })) as any
+                    );
+                    downloadCSV(`${exportName}-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+                    toast.success("已匯出 CSV");
+                  } catch (e: any) {
+                    toast.error(e.message || "匯出失敗");
+                  }
+                }}
+              >
+                <Download className="h-4 w-4" />
+                CSV
+              </Button>
+            </>
+          )}
+          {importMap && (
+            <ImportBtn
+              endpoint={importEndpoint || endpoint}
+              importMap={importMap}
+              templateHeaders={templateHeaders}
+              templateName={exportName}
+              onDone={load}
+            />
           )}
           {canCreate && (
             <Button

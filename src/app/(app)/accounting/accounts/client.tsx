@@ -120,6 +120,17 @@ export function AccountClient() {
         exportName="accounts"
         pdfTitle="會計科目"
         FormDialog={AccountDialog}
+        templateHeaders={["編號", "名稱", "類型", "期初餘額"]}
+        importMap={(r) => {
+          const typeRaw = String(r["類型"] ?? r.type ?? "").trim();
+          const typeMap: Record<string, string> = { 資產: "ASSET", 負債: "LIABILITY", 權益: "EQUITY", 收入: "REVENUE", 費用: "EXPENSE", 成本: "COST" };
+          return {
+            code: String(r["編號"] ?? r.code ?? "").trim(),
+            name: String(r["名稱"] ?? r.name ?? "").trim(),
+            type: typeMap[typeRaw] || typeRaw.toUpperCase(),
+            openingBalance: Number(r["期初餘額"] ?? r.openingBalance ?? 0),
+          };
+        }}
         columns={[
           { key: "code", title: "編號", render: (r: any) => <span className="font-mono text-xs">{r.code}</span> },
           { key: "name", title: "名稱" },

@@ -98,6 +98,23 @@ export function OrderClient({ kind }: { kind: Kind }) {
             匯出 CSV
           </Button>
           <PDFOrderBtn kind={kind} />
+          <Button variant="outline" onClick={async () => {
+            const params = new URLSearchParams({ q, pageSize: "10000" });
+            const res = await fetch(`${endpoint}?${params}`);
+            const d = await res.json();
+            const { downloadExcel } = await import("@/lib/excel");
+            downloadExcel(`${kind}-orders`, kind === "purchase" ? "採購單" : "銷售單", d.items, [
+              { key: "number", title: "單號" },
+              { key: "party", title: kind === "purchase" ? "供應商" : "客戶", get: (r: any) => (kind === "purchase" ? r.supplier : r.customer)?.companyName ?? "" },
+              { key: "orderDate", title: "日期", get: (r: any) => formatDate(r.orderDate) },
+              { key: "total", title: "總計", get: (r: any) => Number(r.total) },
+              { key: "status", title: "狀態" },
+            ]);
+            toast.success("已匯出 Excel");
+          }}>
+            <FileDown className="h-4 w-4" />
+            Excel
+          </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4" />
             列印

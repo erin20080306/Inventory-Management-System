@@ -46,6 +46,24 @@ export function LedgerClient({ kind }: { kind: "ar" | "ap" }) {
           <Input placeholder={`搜尋${partyLabel}`} className="pl-9 w-72" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
         </div>
         <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={async () => {
+          const res = await fetch(`${endpoint}?q=${encodeURIComponent(q)}&pageSize=10000`);
+          const d = await res.json();
+          const { downloadExcel } = await import("@/lib/excel");
+          downloadExcel(kind === "ar" ? "receivables" : "payables", kind === "ar" ? "應收帳款" : "應付帳款", d.items, [
+            { key: "party", title: partyLabel, get: (r: any) => (kind === "ar" ? r.customer : r.supplier)?.companyName ?? "" },
+            { key: "relNumber", title: "關聯單號", get: (r: any) => (kind === "ar" ? r.salesOrder : r.purchaseOrder)?.number ?? "" },
+            { key: "createdAt", title: "日期", get: (r: any) => formatDate(r.createdAt) },
+            { key: "amount", title: "金額", get: (r: any) => Number(r.amount) },
+            { key: "paidAmount", title: kind === "ar" ? "已收" : "已付", get: (r: any) => Number(r.paidAmount) },
+            { key: "balance", title: "未結", get: (r: any) => Number(r.amount) - Number(r.paidAmount) },
+            { key: "status", title: "狀態" },
+          ]);
+          toast.success("已匯出 Excel");
+        }}>
+          <FileDown className="h-4 w-4" />
+          Excel
+        </Button>
         <Button variant="outline" disabled={pdfBusy} onClick={async () => {
           setPdfBusy(true);
           try { const { exportPageToPDF } = await import("@/lib/export-pdf"); await exportPageToPDF(kind === "ar" ? "應收帳款" : "應付帳款", kind === "ar" ? "receivables" : "payables"); } finally { setPdfBusy(false); }

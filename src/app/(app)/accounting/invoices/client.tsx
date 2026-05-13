@@ -51,6 +51,28 @@ export function InvoiceClient() {
     load();
   }
 
+  async function fetchAllInvoices() {
+    const res = await fetch(`/api/accounting/invoices?q=${encodeURIComponent(q)}&pageSize=10000`);
+    return (await res.json()).items;
+  }
+
+  async function exportExcel() {
+    const items = await fetchAllInvoices();
+    const { downloadExcel } = await import("@/lib/excel");
+    downloadExcel("invoices", "發票管理", items, [
+      { key: "invoiceDate", title: "日期", get: (r: any) => formatDate(r.invoiceDate) },
+      { key: "type", title: "類型", get: (r: any) => (r.type === "SALES" ? "銷項" : "進項") },
+      { key: "number", title: "發票號碼" },
+      { key: "party", title: "對象", get: (r: any) => (r.customer ?? r.supplier)?.companyName ?? "" },
+      { key: "amountExTax", title: "未稅金額", get: (r: any) => Number(r.amountExTax) },
+      { key: "taxAmount", title: "稅額", get: (r: any) => Number(r.taxAmount) },
+      { key: "totalAmount", title: "含稅金額", get: (r: any) => Number(r.totalAmount) },
+      { key: "status", title: "狀態" },
+      { key: "remark", title: "備註" },
+    ]);
+    toast.success("已匯出 Excel");
+  }
+
   async function exportCSV() {
     const res = await fetch(`/api/accounting/invoices?q=${encodeURIComponent(q)}&pageSize=10000`);
     const d = await res.json();
@@ -85,7 +107,8 @@ export function InvoiceClient() {
             PDF
           </Button>
           <Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4" />列印</Button>
-          <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4" />匯出 CSV</Button>
+          <Button variant="outline" onClick={exportExcel}><FileDown className="h-4 w-4" />Excel</Button>
+          <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4" />CSV</Button>
           <Button variant="outline" onClick={() => setOpenFromSO(true)}><FileText className="h-4 w-4" />由銷售單開立</Button>
           <Button variant="outline" onClick={() => setOpenFromPO(true)}><FileText className="h-4 w-4" />由採購單開立</Button>
           <Button onClick={() => setOpenNew(true)}><Plus className="h-4 w-4" />新增發票</Button>

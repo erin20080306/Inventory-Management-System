@@ -124,6 +124,16 @@ export function PartyClient({ kind }: { kind: "customer" | "supplier" }) {
       FormDialog={(props) => <PartyDialog {...props} endpoint={endpoint} kind={kind} />}
       pdfTitle={kind === "customer" ? "客戶管理" : "供應商管理"}
       exportName={kind === "customer" ? "customers" : "suppliers"}
+      templateHeaders={["編號", "公司名稱", "統編", "聯絡人", "電話", "Email", "地址"]}
+      importMap={(r) => ({
+        code: String(r["編號"] ?? r.code ?? "").trim(),
+        companyName: String(r["公司名稱"] ?? r.companyName ?? "").trim(),
+        taxId: String(r["統編"] ?? r.taxId ?? "").trim() || undefined,
+        contactName: String(r["聯絡人"] ?? r.contactName ?? "").trim() || undefined,
+        phone: String(r["電話"] ?? r.phone ?? "").trim() || undefined,
+        email: String(r["Email"] ?? r.email ?? "").trim() || undefined,
+        address: String(r["地址"] ?? r.address ?? "").trim() || undefined,
+      })}
       columns={[
         { key: "code", title: "編號", render: (r) => <span className="font-mono text-xs">{r.code}</span> },
         { key: "companyName", title: "公司名稱" },

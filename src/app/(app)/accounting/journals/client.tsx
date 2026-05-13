@@ -87,7 +87,28 @@ export function JournalClient() {
               downloadCSV(`journals-${new Date().toISOString().slice(0, 10)}.csv`, csv);
               toast.success("已匯出 CSV");
             }}
-          ><Download className="h-4 w-4" />匯出 CSV</Button>
+          ><Download className="h-4 w-4" />CSV</Button>
+          <Button variant="outline" onClick={async () => {
+            const res = await fetch(`/api/accounting/journals?q=${encodeURIComponent(q)}&pageSize=10000`);
+            const d = await res.json();
+            const flat: any[] = [];
+            d.items.forEach((j: any) => j.lines.forEach((l: any) => flat.push({
+              number: j.number, date: formatDate(j.entryDate), summary: j.summary, status: j.status,
+              account: `${l.account.code} ${l.account.name}`, debit: Number(l.debit), credit: Number(l.credit), memo: l.memo ?? "",
+            })));
+            const { downloadExcel } = await import("@/lib/excel");
+            downloadExcel("journals", "傳票管理", flat, [
+              { key: "number", title: "傳票編號" },
+              { key: "date", title: "日期" },
+              { key: "summary", title: "摘要" },
+              { key: "account", title: "科目" },
+              { key: "debit", title: "借方" },
+              { key: "credit", title: "貸方" },
+              { key: "memo", title: "分錄摘要" },
+              { key: "status", title: "狀態" },
+            ]);
+            toast.success("已匯出 Excel");
+          }}><FileDown className="h-4 w-4" />Excel</Button>
           <Button variant="outline" disabled={pdfBusy} onClick={async () => {
             setPdfBusy(true);
             try { const { exportPageToPDF } = await import("@/lib/export-pdf"); await exportPageToPDF("傳票管理", "journals"); } finally { setPdfBusy(false); }
