@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatMoney, formatNumber } from "@/lib/utils";
+import { X } from "lucide-react";
 
 type Product = {
   id: string;
@@ -229,11 +230,15 @@ function ProductDialog({ open, onClose, row, onSaved }: any) {
 }
 
 export function ProductClient() {
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  
   return (
-    <CrudTable<Product>
-      endpoint="/api/products"
-      searchPlaceholder="搜尋 SKU / 商品名稱 / 條碼"
-      columns={[
+    <>
+      <CrudTable<Product>
+        endpoint="/api/products"
+        searchPlaceholder="搜尋 SKU / 商品名稱 / 條碼"
+        canEdit={true}
+        columns={[
         { 
           key: "imageUrl", 
           title: "圖片", 
@@ -245,7 +250,7 @@ export function ProductClient() {
               className="w-12 h-12 object-cover rounded cursor-pointer hover:ring-2 hover:ring-ring transition-all"
               onClick={(e) => {
                 e.stopPropagation();
-                if (r.imageUrl) window.open(r.imageUrl, "_blank");
+                setEnlargedImage(r.imageUrl);
               }}
             />
           ) : (
@@ -287,5 +292,21 @@ export function ProductClient() {
         barcode: String(r["條碼"] ?? r.barcode ?? "").trim() || undefined,
       })}
     />
+      
+      {/* 圖片放大模態框 */}
+      {enlargedImage && (
+        <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
+          <DialogContent className="max-w-4xl">
+            <button
+              onClick={() => setEnlargedImage(null)}
+              className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <img src={enlargedImage} alt="放大圖片" className="w-full h-auto object-contain" />
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
