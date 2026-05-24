@@ -36,6 +36,7 @@ type OrderRow = {
   orderDate: string;
   supplier?: { companyName: string };
   customer?: { companyName: string };
+  items?: any[];
 };
 
 export function OrderClient({ kind }: { kind: Kind }) {
@@ -130,6 +131,7 @@ export function OrderClient({ kind }: { kind: Kind }) {
       <Table>
         <THead>
           <TR>
+            <TH>圖片</TH>
             <TH>單號</TH>
             <TH>{partyLabel}</TH>
             <TH>日期</TH>
@@ -141,21 +143,30 @@ export function OrderClient({ kind }: { kind: Kind }) {
         <TBody>
           {loading && (
             <TR>
-              <TD colSpan={6} className="text-center py-10">
+              <TD colSpan={7} className="text-center py-10">
                 <Loader2 className="h-5 w-5 animate-spin inline-block" />
               </TD>
             </TR>
           )}
           {!loading && rows.length === 0 && (
             <TR>
-              <TD colSpan={6}>
+              <TD colSpan={7}>
                 <EmptyState />
               </TD>
             </TR>
           )}
           {!loading &&
-            rows.map((r) => (
+            rows.map((r) => {
+              const firstItemImage = r.items?.[0]?.product?.imageUrl;
+              return (
               <TR key={r.id}>
+                <TD>
+                  {firstItemImage ? (
+                    <img src={firstItemImage} alt="" className="w-10 h-10 object-cover rounded" />
+                  ) : (
+                    <div className="w-10 h-10 rounded bg-muted/20 flex items-center justify-center text-xs text-muted-foreground">-</div>
+                  )}
+                </TD>
                 <TD className="font-mono text-xs">{r.number}</TD>
                 <TD>{(kind === "purchase" ? r.supplier : r.customer)?.companyName ?? "—"}</TD>
                 <TD>{formatDate(r.orderDate)}</TD>
@@ -169,7 +180,8 @@ export function OrderClient({ kind }: { kind: Kind }) {
                   </Button>
                 </TD>
               </TR>
-            ))}
+            );
+            })}
         </TBody>
       </Table>
 

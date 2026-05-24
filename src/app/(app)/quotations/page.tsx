@@ -13,7 +13,7 @@ export default async function Page() {
   const g = await requirePermissionOrForbidden("quotations.view");
   if (g.forbidden) return g.element;
   const items = await prisma.quotation.findMany({
-    include: { customer: true, items: true },
+    include: { customer: true, items: { include: { product: true } } },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -22,11 +22,20 @@ export default async function Page() {
       <Card>
         <CardContent className="pt-6">
           <Table>
-            <THead><TR><TH>單號</TH><TH>客戶</TH><TH>日期</TH><TH>有效期限</TH><TH>總計</TH><TH>狀態</TH></TR></THead>
+            <THead><TR><TH>圖片</TH><TH>單號</TH><TH>客戶</TH><TH>日期</TH><TH>有效期限</TH><TH>總計</TH><TH>狀態</TH></TR></THead>
             <TBody>
-              {items.length === 0 && <TR><TD colSpan={6} className="text-center text-muted-foreground">尚無報價單</TD></TR>}
-              {items.map((q: any) => (
+              {items.length === 0 && <TR><TD colSpan={7} className="text-center text-muted-foreground">尚無報價單</TD></TR>}
+              {items.map((q: any) => {
+                const firstItemImage = q.items?.[0]?.product?.imageUrl;
+                return (
                 <TR key={q.id}>
+                  <TD>
+                    {firstItemImage ? (
+                      <img src={firstItemImage} alt="" className="w-10 h-10 object-cover rounded" />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-muted/20 flex items-center justify-center text-xs text-muted-foreground">-</div>
+                    )}
+                  </TD>
                   <TD className="font-mono text-xs">{q.number}</TD>
                   <TD>{q.customer.companyName}</TD>
                   <TD>{formatDate(q.quoteDate)}</TD>
@@ -34,7 +43,8 @@ export default async function Page() {
                   <TD>{formatMoney(q.total)}</TD>
                   <TD><StatusBadge status={q.status} /></TD>
                 </TR>
-              ))}
+              );
+              })}
             </TBody>
           </Table>
         </CardContent>
