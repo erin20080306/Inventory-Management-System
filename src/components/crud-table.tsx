@@ -111,6 +111,7 @@ export type Column<T> = {
   render?: (row: T) => React.ReactNode;
   className?: string;
   csv?: (row: T) => any; // CSV 匯出值 (若未提供則用 row[key])
+  isImage?: boolean; // 標記此欄位為圖片欄位（用於 Excel 匯出）
 };
 
 export function CrudTable<T extends { id: string }>({
