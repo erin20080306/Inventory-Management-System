@@ -293,6 +293,7 @@ function CreateOrderDialog({ kind, open, onClose, onCreated }: any) {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-xs text-muted-foreground">
               <tr>
+                <th className="p-2 text-left">圖片</th>
                 <th className="p-2 text-left">商品</th>
                 <th className="p-2 w-20">數量</th>
                 <th className="p-2 w-28">單價</th>
@@ -305,8 +306,16 @@ function CreateOrderDialog({ kind, open, onClose, onCreated }: any) {
             <tbody>
               {items.map((it, idx) => {
                 const line = Number(it.quantity) * Number(it.unitPrice) - Number(it.discount ?? 0);
+                const product = products.find((p) => p.id === it.productId);
                 return (
                   <tr key={idx} className="border-t">
+                    <td className="p-2">
+                      {product?.imageUrl ? (
+                        <img src={product.imageUrl} alt="" className="w-10 h-10 object-cover rounded" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-muted/20 flex items-center justify-center text-xs text-muted-foreground">-</div>
+                      )}
+                    </td>
                     <td className="p-2">
                       <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={it.productId} onChange={(e) => updateItem(idx, { productId: e.target.value })}>
                         <option value="">選擇商品</option>
@@ -446,6 +455,7 @@ function ViewOrderDialog({ kind, id, onClose, onChanged }: any) {
         <table className="w-full text-sm border rounded-md">
           <thead className="bg-muted/50 text-xs text-muted-foreground">
             <tr>
+              <th className="p-2 text-left">圖片</th>
               <th className="p-2 text-left">SKU</th>
               <th className="p-2 text-left">商品</th>
               <th className="p-2 text-right">數量</th>
@@ -456,6 +466,13 @@ function ViewOrderDialog({ kind, id, onClose, onChanged }: any) {
           <tbody>
             {data.items.map((i: any) => (
               <tr key={i.id} className="border-t">
+                <td className="p-2">
+                  {i.product?.imageUrl ? (
+                    <img src={i.product.imageUrl} alt="" className="w-10 h-10 object-cover rounded" />
+                  ) : (
+                    <div className="w-10 h-10 rounded bg-muted/20 flex items-center justify-center text-xs text-muted-foreground">-</div>
+                  )}
+                </td>
                 <td className="p-2 font-mono text-xs">{i.product?.sku}</td>
                 <td className="p-2">{i.product?.name}</td>
                 <td className="p-2 text-right">{i.quantity}</td>
