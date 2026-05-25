@@ -497,6 +497,13 @@ function ViewOrderDialog({ kind, id, onClose, onChanged }: any) {
 
         {data.remark && <div className="text-sm"><span className="text-muted-foreground">備註：</span>{data.remark}</div>}
 
+        {(data.status === "REJECTED" || data.status === "VOIDED") && data.remark && (
+          <div className="text-sm bg-red-50 border border-red-200 rounded-md p-3">
+            <span className="text-red-600 font-semibold">{data.status === "REJECTED" ? "駁回原因" : "作廢原因"}：</span>
+            <span className="text-red-700 ml-2">{data.remark}</span>
+          </div>
+        )}
+
         <div className="border-t pt-3 space-y-2">
           <Label>處理倉庫</Label>
           <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}>

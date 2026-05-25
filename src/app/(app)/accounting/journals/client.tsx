@@ -280,6 +280,12 @@ function ViewJournalDialog({ entry, onClose, onAct }: any) {
             <tr className="border-t font-medium bg-muted/30"><td className="p-2">合計</td><td className="p-2 text-right">{formatMoney(totalDebit)}</td><td className="p-2 text-right">{formatMoney(totalCredit)}</td><td></td></tr>
           </tbody>
         </table>
+        {(entry.status === "REJECTED" || entry.status === "VOIDED") && entry.summary && (
+          <div className="text-sm bg-red-50 border border-red-200 rounded-md p-3">
+            <span className="text-red-600 font-semibold">{entry.status === "REJECTED" ? "駁回原因" : "作廢原因"}：</span>
+            <span className="text-red-700 ml-2">{entry.summary}</span>
+          </div>
+        )}
         <DialogFooter className="gap-2 flex-wrap">
           <Button variant="outline" onClick={() => window.open(`/print/journal/${entry.id}`, "_blank")}>
             <Printer className="h-4 w-4" />列印
