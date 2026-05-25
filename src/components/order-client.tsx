@@ -127,7 +127,7 @@ export function OrderClient({ kind }: { kind: Kind }) {
                 });
               });
             });
-            downloadExcel(`${kind}-orders`, kind === "purchase" ? "採購單" : "銷售單", flatData, [
+            downloadExcel(kind === "purchase" ? "採購單" : "銷售單", kind === "purchase" ? "採購單" : "銷售單", flatData, [
               { key: "單號", title: "單號" },
               { key: kind === "purchase" ? "供應商" : "客戶", title: kind === "purchase" ? "供應商" : "客戶" },
               { key: "日期", title: "日期" },

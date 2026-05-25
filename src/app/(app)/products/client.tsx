@@ -282,7 +282,7 @@ export function ProductClient() {
       ]}
       FormDialog={ProductDialog}
       pdfTitle="商品管理"
-      exportName="products"
+      exportName="商品管理"
       templateHeaders={["SKU", "商品名稱", "規格", "條碼", "單位", "成本", "售價", "安全庫存", "圖片URL"]}
       importMap={(r) => ({
         sku: String(r["SKU"] ?? r.sku ?? "").trim(),
